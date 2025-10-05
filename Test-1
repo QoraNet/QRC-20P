@@ -22,7 +22,7 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────┐         ┌──────────────────┐             │
-│  │  User Wallet    │         │  Sonic Validator │             │
+│  │  User Wallet    │         │    Validator     │             │
 │  │  (JavaScript)   │────────▶│   (Go + Rust)    │             │
 │  └─────────────────┘         └──────────────────┘             │
 │         │                             │                        │
@@ -68,7 +68,7 @@ QoraNet-Blockchain/
 │   └── target/release/
 │       └── libqoranet_privacy.so  # Compiled library (20.3 MB)
 │
-├── sonic-main/                  # Go Blockchain
+├── blockchian-main/                  # Go Blockchain
 │   ├── privacy_bridge/          # Go-Rust Bridge
 │   │   ├── bridge.go            # FFI calls to Rust
 │   │   ├── dual_token.go        # Token deployment wrapper

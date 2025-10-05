@@ -15,7 +15,7 @@ The QoraNet privacy module implements a comprehensive zero-knowledge privacy sys
 │  ┌────────────────────────────────────────────────────────────────────┐     │
 │  │                      GO BLOCKCHAIN LAYER                            │    │
 │  │  ┌──────────────────┐    ┌──────────────────┐  ┌──────────────────┐ │    │
-│  │  │ opera/           │    │ opera/           │  │ opera/           │ │    │
+│  │  │ qora/            │    │ qora/            │  │ qora/            │ │    │
 │  │  │ privacy_         │    │ dual_token_      │  │ privacy_abi.go   │ │    │
 │  │  │ integration.go   │    │ integration.go   │  │                  │ │    │
 │  │  │                  │    │                  │  │ Privacy-specific │ │    │
@@ -26,7 +26,7 @@ The QoraNet privacy module implements a comprehensive zero-knowledge privacy sys
 │  │           └───────────────────────┴─────────────────────┘           │    │
 │  │                                   │                                 │    │
 │  │                      ┌────────────▼──────────────┐                  │    │
-│  │                      │  opera/privacy_ffi.go     │                  │    │
+│  │                      │  qora/privacy_ffi.go     │                  │    │
 │  │                      │  (FFI Bridge to Rust)     │                  │    │
 │  │                      │  • CreatePrivateTransfer  │                  │    │
 │  │                      │  • VerifyPrivateTransfer  │                  │    │
@@ -517,8 +517,8 @@ fn parse_u256(s: &str) -> Option<U256>
 
 ### 🐹 GO INTEGRATION FILES
 
-#### **8. opera/privacy_integration.go** - Safe Privacy Wrapper
-**Location:** `D:\QoraNet-Blockchain\opera\privacy_integration.go`
+#### **8. qora/privacy_integration.go** - Safe Privacy Wrapper
+**Location:** `D:\QoraNet-Blockchain\qora\privacy_integration.go`
 
 **Role:** Adds privacy features WITHOUT modifying core blockchain logic
 

@@ -1,0 +1,1559 @@
+# QoraNet Dual-Mode Privacy Token - Complete Process Documentation
+
+## Table of Contents
+1. [System Architecture](#system-architecture)
+2. [Token Creation Process](#token-creation-process)
+3. [Transaction Encoding](#transaction-encoding)
+4. [Mode Switching (Public ↔ Private)](#mode-switching)
+5. [Amount Splitting Process](#amount-splitting-process)
+6. [Double-Spend Prevention](#double-spend-prevention)
+7. [Privacy Mechanisms](#privacy-mechanisms)
+8. [Complete Transaction Flow](#complete-transaction-flow)
+
+---
+
+## System Architecture
+
+### Components Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    QoraNet Privacy System                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐         ┌──────────────────┐             │
+│  │  User Wallet    │         │  Sonic Validator │             │
+│  │  (JavaScript)   │────────▶│   (Go + Rust)    │             │
+│  └─────────────────┘         └──────────────────┘             │
+│         │                             │                        │
+│         │ Transaction                 │                        │
+│         │ (Encoded Data)              │                        │
+│         ▼                             ▼                        │
+│  ┌─────────────────┐         ┌──────────────────┐             │
+│  │  Privacy        │         │  Rust FFI        │             │
+│  │  Contract       │◀───────▶│  Privacy Library │             │
+│  │  0x10000...0001 │         │  (Halo2 + Merkle)│             │
+│  └─────────────────┘         └──────────────────┘             │
+│         │                             │                        │
+│         │ Creates                     │ Manages                │
+│         │                             │                        │
+│         ▼                             ▼                        │
+│  ┌──────────────────────────────────────────────┐             │
+│  │          Dual-Mode Token                     │             │
+│  │  ┌─────────────────┐  ┌──────────────────┐  │             │
+│  │  │ Public Address  │  │ Private Address  │  │             │
+│  │  │ (ERC-20)        │  │ (Shielded)       │  │             │
+│  │  │ 0xABCD1234...   │  │ 0x9876FEDC...    │  │             │
+│  │  │                 │  │                  │  │             │
+│  │  │ Visible Balance │  │ HIDDEN Balance   │  │             │
+│  │  │ 995,000 PRIV    │  │ 5,000 PRIV       │  │             │
+│  │  └─────────────────┘  └──────────────────┘  │             │
+│  └──────────────────────────────────────────────┘             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### File Structure
+
+```
+QoraNet-Blockchain/
+├── Rust-FFI/                    # Rust Privacy Library
+│   ├── privacy/
+│   │   ├── privacy.h            # C FFI Header
+│   │   ├── ffi_dual_token.rs    # Dual token deployment
+│   │   ├── token_factory.rs     # Token creation logic
+│   │   ├── merkle_tree.rs       # Privacy Merkle tree
+│   │   ├── proof_system.rs      # Halo2 ZK-SNARK proofs
+│   │   └── poseidon.rs          # Poseidon hash for commitments
+│   └── target/release/
+│       └── libqoranet_privacy.so  # Compiled library (20.3 MB)
+│
+├── sonic-main/                  # Go Blockchain
+│   ├── privacy_bridge/          # Go-Rust Bridge
+│   │   ├── bridge.go            # FFI calls to Rust
+│   │   ├── dual_token.go        # Token deployment wrapper
+│   │   ├── tx_encoding.go       # Transaction decoder
+│   │   ├── fees.go              # USD-pegged fee system
+│   │   ├── rpc.go               # Privacy RPC API
+│   │   ├── processor.go         # Transaction processor
+│   │   └── types.go             # Data structures
+│   └── gossip/
+│       └── service.go           # RPC registration
+│
+└── deploy-token.js              # Token deployment script
+```
+
+---
+
+## Token Creation Process
+
+### Step 1: Token Configuration
+
+When creating a dual-mode privacy token, you configure:
+
+```javascript
+// Token Parameters
+const tokenName = 'PrivacyToken';
+const tokenSymbol = 'PRIV';
+const totalSupply = '1000000000000000000000000'; // 1 million * 10^18
+const decimals = 18;
+
+// Privacy Contract Address (pre-deployed)
+const PRIVACY_CONTRACT = '0x1000000000000000000000000000000000000001';
+
+// Method ID for token deployment
+const DEPLOY_TOKEN_METHOD = '01000000';
+```
+
+### Step 2: Data Encoding
+
+The deployment data is encoded as follows:
+
+```javascript
+function encodeString(str) {
+  // Convert string to hex and pad to 32 bytes
+  return web3.utils.padRight(web3.utils.asciiToHex(str), 64);
+}
+
+function encodeUint256(value) {
+  // Convert number to hex and pad to 32 bytes
+  return web3.utils.padLeft(web3.utils.toHex(value), 64);
+}
+
+// Build deployment data
+const deploymentData =
+  DEPLOY_TOKEN_METHOD +                    // Method ID (4 bytes)
+  encodeString(tokenName).substring(2) +   // Name (32 bytes)
+  encodeString(tokenSymbol).substring(2) + // Symbol (32 bytes)
+  encodeUint256(totalSupply).substring(2) +// Supply (32 bytes)
+  encodeUint256(decimals).substring(2);    // Decimals (32 bytes)
+
+// Result: 132 bytes of encoded data
+// 0x01000000                                                    ← Method ID
+//   0000000000000000000000000000000000000000000000000000000000 ← Name padding
+//   5072697661637954...                                        ← "PrivacyToken"
+//   0000000000000000000000000000000000000000000000000000000000 ← Symbol padding
+//   505249560000000...                                        ← "PRIV"
+//   00000000000000000000000000000000000000000000d3c21bcecceda1000000 ← Supply
+//   0000000000000000000000000000000000000000000000000000000000000012 ← Decimals
+```
+
+### Step 3: Transaction Creation
+
+```javascript
+// Get current gas price from network
+const gasPrice = await web3.eth.getGasPrice(); // 0x4190ab00 (1.1 Gwei)
+
+// Create transaction
+const tx = {
+  from: '0x239fA7623354eC26520dE878B52f13Fe84b06971',  // Validator account
+  to: PRIVACY_CONTRACT,                                // Privacy contract
+  value: web3.utils.toWei('0.001', 'ether'),          // Fee: 0.001 ETH
+  data: '0x' + deploymentData,                         // Encoded data
+  gas: web3.utils.toHex(1000000),                      // 1M gas limit
+  gasPrice: gasPrice                                   // Dynamic gas price
+};
+```
+
+### Step 4: Transaction Signing
+
+```javascript
+// Private key for validator account
+const privateKey = '0x9a983cb3d832fbde5ab49d692b7a8ddf5de5118826ca0349cb97f26305a3c5bb';
+
+// Sign transaction
+const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+
+// Result:
+// {
+//   messageHash: '0x...',
+//   v: '0x...',
+//   r: '0x...',
+//   s: '0x...',
+//   rawTransaction: '0xf8ab80843...',  ← This is sent to network
+//   transactionHash: '0xeb0994dc593aa7ac4d0403c9116574bf5ba47176580804a94ff59d4cf28e87bd'
+// }
+```
+
+### Step 5: Broadcasting to Network
+
+```javascript
+// Send signed transaction to validator
+const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+// Transaction enters mempool
+// Validators pick it up for inclusion in next block
+```
+
+### Step 6: Transaction Execution
+
+```
+Network Processing Flow:
+┌────────────────────────────────────────────────────────────┐
+│ 1. Transaction arrives at Validator 1                      │
+│    TX Hash: 0xeb0994dc...                                  │
+│    Gas: 1,000,000                                          │
+│    Data: 0x01000000... (132 bytes)                         │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 2. tx_encoding.go decodes transaction                      │
+│    Method: DecodePrivacyOperation()                        │
+│                                                            │
+│    func DecodePrivacyOperation(data []byte) {              │
+│      methodID := data[0:4]  // 0x01000000                 │
+│      if methodID == "01000000" {                           │
+│        name := decodeString(data[4:36])                    │
+│        symbol := decodeString(data[36:68])                 │
+│        supply := decodeBigInt(data[68:100])                │
+│        decimals := decodeBigInt(data[100:132])             │
+│                                                            │
+│        return &PrivacyOperation{                           │
+│          Type: "deploy_token",                             │
+│          TokenName: "PrivacyToken",                        │
+│          TokenSymbol: "PRIV",                              │
+│          Amount: 1000000 * 10^18,                          │
+│          Decimals: 18                                      │
+│        }                                                   │
+│      }                                                     │
+│    }                                                       │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 3. Transaction Validation                                  │
+│    - Check signature: ✓ Valid                              │
+│    - Check nonce: ✓ Correct                                │
+│    - Check gas: ✓ Sufficient                               │
+│    - Check balance: ✓ Has funds                            │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 4. Token ID Generation                                     │
+│    tokenID = keccak256(abi.encode(name, symbol))           │
+│           = keccak256("PrivacyToken" + "PRIV")             │
+│           = 0xa3eaee0c81cb34a85f37660e5bcfeb7c...          │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 5. Rust FFI Call (when connected)                          │
+│    bridge.go → DeployDualToken()                           │
+│                                                            │
+│    result := C.deploy_dual_token(                          │
+│      tokenID,                                              │
+│      "PrivacyToken",                                       │
+│      "PRIV",                                               │
+│      1000000 * 10^18,                                      │
+│      18,                                                   │
+│      blockNumber                                           │
+│    )                                                       │
+│                                                            │
+│    Returns:                                                │
+│    {                                                       │
+│      token_id: 0xa3eaee0c...,                              │
+│      public_address: 0xABCD1234...,  ← ERC-20 contract     │
+│      private_address: 0x9876FEDC..., ← Privacy contract    │
+│      success: 1                                            │
+│    }                                                       │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 6. Rust Creates Token Structures                           │
+│    File: token_factory.rs                                  │
+│                                                            │
+│    pub fn create_dual_token(...) -> DualToken {            │
+│      // Create public ERC-20 contract                      │
+│      let public_contract = ERC20Token::new(                │
+│        name: "PrivacyToken",                               │
+│        symbol: "PRIV",                                     │
+│        total_supply: 1000000 * 10^18,                      │
+│        decimals: 18                                        │
+│      );                                                    │
+│                                                            │
+│      // Initialize public balance                          │
+│      public_contract.balances.insert(                      │
+│        deployer_address,                                   │
+│        1000000 * 10^18  // All tokens start public         │
+│      );                                                    │
+│                                                            │
+│      // Create privacy contract                            │
+│      let private_contract = PrivacyToken::new(             │
+│        token_id: token_id,                                 │
+│        merkle_tree: MerkleTree::new(32), // Empty tree     │
+│        commitments: vec![],              // No commitments │
+│        nullifiers: HashSet::new()        // No nullifiers  │
+│      );                                                    │
+│                                                            │
+│      return DualToken {                                    │
+│        token_id,                                           │
+│        public_address: calculate_address(&public_contract),│
+│        private_address: calculate_address(&private_contract),│
+│        public_contract,                                    │
+│        private_contract                                    │
+│      }                                                     │
+│    }                                                       │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 7. State Update in Blockchain                              │
+│    - Create receipt with status: SUCCESS                   │
+│    - Gas used: 124,754 (0x1e752)                           │
+│    - Emit event: TokenDeployed(tokenID, publicAddr, privateAddr) │
+│    - Update world state                                    │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 8. Block Creation                                          │
+│    Validator includes transaction in block:                │
+│    Block #101 (0x65)                                       │
+│    Transaction: 0xeb0994dc...                              │
+│    Status: ✓ SUCCESS                                       │
+└────────────────────────────────────────────────────────────┘
+                        ▼
+┌────────────────────────────────────────────────────────────┐
+│ 9. Multi-Validator Consensus                               │
+│    Validator 1: ✓ Block 101 confirmed                      │
+│    Validator 2: ✓ Block 101 confirmed                      │
+│    Validator 3: ✓ Block 101 confirmed                      │
+│    Privacy Root: 0x0000... (no private tokens yet)         │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Step 7: Final Result
+
+```javascript
+// Transaction Receipt
+{
+  transactionHash: '0xeb0994dc593aa7ac4d0403c9116574bf5ba47176580804a94ff59d4cf28e87bd',
+  blockNumber: 101,
+  blockHash: '0x...',
+  gasUsed: 124754,
+  status: true, // SUCCESS
+  logs: [
+    {
+      address: '0x1000000000000000000000000000000000000001',
+      topics: [
+        '0x...',  // TokenDeployed event signature
+        '0xa3eaee0c...' // Token ID
+      ],
+      data: '0x...'  // public_address + private_address + total_supply
+    }
+  ]
+}
+
+// Token Created!
+Token ID: 0xa3eaee0c81cb34a85f37660e5bcfeb7c...
+Public Address:  0xABCD1234... (visible ERC-20)
+Private Address: 0x9876FEDC... (hidden shielded)
+
+Initial State:
+  Public Balance:  1,000,000 PRIV ← All tokens visible
+  Private Balance: 0 PRIV         ← Empty Merkle tree
+```
+
+---
+
+## Transaction Encoding
+
+### Method IDs
+
+```javascript
+// 4-byte method identifiers
+const DEPLOY_TOKEN_METHOD = '01000000';      // Deploy dual token
+const SWITCH_MODE_METHOD = '02000000';       // Switch public ↔ private
+const PRIVATE_TRANSFER_METHOD = '03000000';  // Private transfer
+```
+
+### Encoding Functions
+
+```javascript
+// String Encoding (32 bytes)
+function encodeString(str) {
+  const hex = web3.utils.asciiToHex(str);
+  return web3.utils.padRight(hex, 64); // 64 hex chars = 32 bytes
+}
+
+// Example:
+encodeString("PrivacyToken")
+// Returns: "0x5072697661637954...0000" (64 chars)
+
+// Number Encoding (32 bytes / 256 bits)
+function encodeUint256(value) {
+  const hex = web3.utils.toHex(value);
+  return web3.utils.padLeft(hex, 64);
+}
+
+// Example:
+encodeUint256(1000000)
+// Returns: "0x00000000000000000000000000000000000000000000000000000000000f4240"
+```
+
+### Complete Encoding Examples
+
+#### Deploy Token Encoding
+```
+Method: DEPLOY_TOKEN_METHOD (0x01000000)
+Parameters:
+  - name: string (32 bytes)
+  - symbol: string (32 bytes)
+  - supply: uint256 (32 bytes)
+  - decimals: uint256 (32 bytes)
+
+Total: 4 + 32 + 32 + 32 + 32 = 132 bytes
+
+Hex representation:
+0x01000000                                                     ← Method
+  5072697661637954...0000000000000000000000000000000000000000 ← "PrivacyToken"
+  5052495600000000...0000000000000000000000000000000000000000 ← "PRIV"
+  00000000000000000000000000000000000000000000d3c21bcecceda1000000 ← 1000000 * 10^18
+  0000000000000000000000000000000000000000000000000000000000000012 ← 18
+```
+
+#### Switch Mode Encoding
+```
+Method: SWITCH_MODE_METHOD (0x02000000)
+Parameters:
+  - tokenID: bytes32 (32 bytes)
+  - amount: uint256 (32 bytes)
+  - toPrivate: bool as uint256 (32 bytes)
+
+Total: 4 + 32 + 32 + 32 = 100 bytes
+
+Example (switch 5000 PRIV to private):
+0x02000000                                                     ← Method
+  a3eaee0c81cb34a85f37660e5bcfeb7c...                         ← Token ID
+  000000000000000000000000000000000000000000010f0cf064dd59200000 ← 5000 * 10^18
+  0000000000000000000000000000000000000000000000000000000000000001 ← true (to private)
+```
+
+#### Private Transfer Encoding
+```
+Method: PRIVATE_TRANSFER_METHOD (0x03000000)
+Parameters:
+  - tokenID: bytes32 (32 bytes)
+  - commitment: bytes32 (32 bytes)
+  - nullifier: bytes32 (32 bytes)
+  - proof: bytes (256 bytes for Halo2)
+
+Total: 4 + 32 + 32 + 32 + 256 = 356 bytes
+
+Example:
+0x03000000                                                     ← Method
+  a3eaee0c81cb34a85f37660e5bcfeb7c...                         ← Token ID
+  7f3e9c2a5b1d8e4f6c0a3b7d9e5f1c8a...                         ← New commitment
+  1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d...                         ← Spent nullifier
+  [256 bytes of ZK-SNARK proof data]                          ← Halo2 proof
+```
+
+---
+
+## Mode Switching
+
+### Public → Private (Hiding Amount)
+
+When you switch tokens from public to private mode, the amount becomes hidden.
+
+#### Step-by-Step Process
+
+```javascript
+// 1. User wants to hide 5000 PRIV tokens
+const amountToHide = web3.utils.toWei('5000', 'ether');
+
+// 2. Encode switch transaction
+const switchData = SWITCH_MODE_METHOD +
+  tokenID.substring(2) +
+  encodeUint256(amountToHide).substring(2) +
+  encodeUint256(1).substring(2); // 1 = to private
+
+// 3. Send transaction
+const tx = {
+  from: userAddress,
+  to: PRIVACY_CONTRACT,
+  value: web3.utils.toWei('0.001', 'ether'), // Fee
+  data: '0x' + switchData,
+  gas: 500000
+};
+
+const receipt = await sendTransaction(tx);
+```
+
+#### What Happens in Rust
+
+```rust
+// File: token_factory.rs
+
+pub fn switch_to_private(
+    token_id: &[u8; 32],
+    user_address: &[u8; 20],
+    amount: u128,
+    salt: &[u8; 32]  // Random secret
+) -> Result<SwitchResult, Error> {
+
+    // 1. Get token contracts
+    let public_contract = get_public_contract(token_id)?;
+    let private_contract = get_private_contract(token_id)?;
+
+    // 2. Check public balance
+    let public_balance = public_contract.balance_of(user_address);
+    if public_balance < amount {
+        return Err(Error::InsufficientBalance);
+    }
+
+    // 3. BURN/LOCK tokens on public side
+    public_contract.burn(user_address, amount)?;
+    // Public balance: 1,000,000 - 5,000 = 995,000 PRIV (visible decrease)
+
+    // 4. Create COMMITMENT on private side (HIDES the amount)
+    let commitment = create_commitment(amount, salt, user_address);
+    // commitment = Poseidon(
+    //   5000 * 10^18,        ← Amount (hidden)
+    //   salt,                 ← Random 32 bytes (your secret)
+    //   user_address          ← Your address (hidden)
+    // )
+    // Result: 0x7f3e9c2a5b1d8e4f6c0a3b7d9e5f1c8a...
+
+    // 5. Add commitment to Merkle tree
+    let tree_index = private_contract.merkle_tree.insert(commitment)?;
+
+    // 6. Create encrypted note (only you can decrypt)
+    let encrypted_note = encrypt_note(
+        amount,
+        salt,
+        user_address,
+        user_public_key  // Your encryption key
+    );
+
+    // 7. Store note in contract
+    private_contract.notes.insert(commitment, encrypted_note);
+
+    // 8. Update Merkle root
+    let new_root = private_contract.merkle_tree.root();
+
+    // 9. Return result
+    Ok(SwitchResult {
+        commitment,
+        tree_index,
+        merkle_root: new_root,
+        encrypted_note
+    })
+}
+```
+
+#### Visual Representation
+
+```
+Before Switch:
+┌─────────────────────────────────────────────────────┐
+│ Public Contract (Visible to everyone)               │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ User Balance: 1,000,000 PRIV                    │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│ Private Contract (Hidden)                            │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ Merkle Tree: EMPTY                              │ │
+│ │ Commitments: []                                 │ │
+│ │ User Balance: 0 PRIV (hidden)                   │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+
+                    Switch 5000 PRIV →
+                           ▼
+
+After Switch:
+┌─────────────────────────────────────────────────────┐
+│ Public Contract (Visible to everyone)               │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ User Balance: 995,000 PRIV ✓ (decreased)       │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│ Private Contract (Hidden)                            │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ Merkle Tree:                                    │ │
+│ │   Root: 0x8a9b...                               │ │
+│ │   Leaves: [0x7f3e9c2a...]                       │ │
+│ │                                                 │ │
+│ │ Commitments:                                    │ │
+│ │   [0] 0x7f3e9c2a5b1d8e4f... (HIDDEN amount)    │ │
+│ │                                                 │ │
+│ │ Encrypted Notes:                                │ │
+│ │   0x7f3e9c2a → {                                │ │
+│ │     amount: ENCRYPTED                           │ │
+│ │     salt: ENCRYPTED                             │ │
+│ │     owner: ENCRYPTED                            │ │
+│ │   }                                             │ │
+│ │                                                 │ │
+│ │ User Balance: 5,000 PRIV ✓ (HIDDEN)            │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Privacy Guarantees
+
+```
+What the PUBLIC can see:
+✓ A transaction occurred
+✓ User switched 5,000 PRIV to private
+✓ Public balance decreased from 1M to 995K
+✓ A commitment was created
+✓ Merkle root updated
+
+What the PUBLIC CANNOT see:
+✗ How much is in private balance (encrypted)
+✗ The salt value used in commitment
+✗ Future private transfers from this balance
+✗ Recipient addresses of private transfers
+✗ Amounts of private transfers
+```
+
+### Private → Public (Revealing Amount)
+
+```javascript
+// 1. User wants to reveal 1000 PRIV
+const amountToReveal = web3.utils.toWei('1000', 'ether');
+
+// 2. Encode switch transaction
+const switchData = SWITCH_MODE_METHOD +
+  tokenID.substring(2) +
+  encodeUint256(amountToReveal).substring(2) +
+  encodeUint256(0).substring(2); // 0 = to public
+
+// 3. Generate ZK proof (proves you have 1000 PRIV privately)
+const proof = generateZKProof({
+  secret_amount: 1000,
+  commitment: myCommitment,
+  merkle_path: getMerklePath(myCommitment),
+  nullifier: generateNullifier(myCommitment, mySalt)
+});
+
+// 4. Send transaction with proof
+const tx = {
+  from: userAddress,
+  to: PRIVACY_CONTRACT,
+  data: '0x' + switchData + proof,
+  gas: 800000 // Higher gas for proof verification
+};
+```
+
+#### Rust Processing
+
+```rust
+pub fn switch_to_public(
+    token_id: &[u8; 32],
+    user_address: &[u8; 20],
+    amount: u128,
+    commitment: &[u8; 32],
+    nullifier: &[u8; 32],
+    proof: &[u8]
+) -> Result<(), Error> {
+
+    // 1. Verify ZK proof
+    let is_valid = verify_halo2_proof(
+        proof,
+        commitment,
+        nullifier,
+        amount,
+        merkle_root
+    )?;
+
+    if !is_valid {
+        return Err(Error::InvalidProof);
+    }
+
+    // 2. Check nullifier not already used (prevent double-spend)
+    if private_contract.nullifiers.contains(nullifier) {
+        return Err(Error::NullifierAlreadyUsed);
+    }
+
+    // 3. Add nullifier (mark commitment as spent)
+    private_contract.nullifiers.insert(nullifier);
+
+    // 4. Remove commitment from Merkle tree
+    private_contract.merkle_tree.remove(commitment)?;
+
+    // 5. MINT tokens on public side
+    public_contract.mint(user_address, amount)?;
+    // Public balance: 995,000 + 1,000 = 996,000 PRIV
+
+    // 6. Update Merkle root
+    let new_root = private_contract.merkle_tree.root();
+
+    Ok(())
+}
+```
+
+---
+
+## Amount Splitting Process
+
+### Scenario: Split 5000 PRIV into Multiple Recipients
+
+After switching 5000 PRIV to private, you can split and send it to multiple recipients while keeping amounts hidden.
+
+#### Transfer 1: Send 2000 PRIV to Recipient A
+
+```javascript
+// 1. Generate commitment for recipient A
+const recipientA = '0x1111111111111111111111111111111111111111';
+const amountA = web3.utils.toWei('2000', 'ether');
+const saltA = web3.utils.randomHex(32); // Random secret
+
+const commitmentA = poseidonHash([
+  amountA,
+  saltA,
+  recipientA
+]);
+// Result: 0x9a8b7c6d...
+
+// 2. Generate nullifier (proves you're spending from your 5000 PRIV)
+const nullifier1 = keccak256(myCommitment + mySalt + "transfer1");
+
+// 3. Generate ZK proof
+const proofA = generateHalo2Proof({
+  // Secret inputs (not revealed):
+  my_commitment: myCommitment,     // Original 5000 PRIV
+  my_amount: 5000,
+  my_salt: mySalt,
+  send_amount: 2000,
+  recipient: recipientA,
+  new_salt: saltA,
+
+  // Public inputs:
+  new_commitment: commitmentA,
+  nullifier: nullifier1,
+  merkle_root: currentRoot
+});
+
+// 4. Encode transaction
+const transferData = PRIVATE_TRANSFER_METHOD +
+  tokenID.substring(2) +
+  commitmentA.substring(2) +
+  nullifier1.substring(2) +
+  proofA.substring(2);
+
+// 5. Send transaction
+const txA = await sendTransaction({
+  to: PRIVACY_CONTRACT,
+  data: '0x' + transferData,
+  gas: 1000000
+});
+
+console.log('Transfer A TX:', txA.transactionHash);
+// Result: 0x7dd82e3b...
+```
+
+#### Transfer 2: Send 1500 PRIV to Recipient B
+
+```javascript
+// Same process for recipient B
+const recipientB = '0x2222222222222222222222222222222222222222';
+const amountB = web3.utils.toWei('1500', 'ether');
+const saltB = web3.utils.randomHex(32);
+
+const commitmentB = poseidonHash([amountB, saltB, recipientB]);
+const nullifier2 = keccak256(myCommitment + mySalt + "transfer2");
+
+const proofB = generateHalo2Proof({
+  my_commitment: myCommitment,
+  my_amount: 5000,
+  my_salt: mySalt,
+  send_amount: 1500,
+  recipient: recipientB,
+  new_salt: saltB,
+  new_commitment: commitmentB,
+  nullifier: nullifier2,
+  merkle_root: currentRoot
+});
+
+const txB = await sendTransaction({
+  to: PRIVACY_CONTRACT,
+  data: encodedTransferB,
+  gas: 1000000
+});
+```
+
+#### Rust Processing for Splits
+
+```rust
+// File: proof_system.rs
+
+pub fn process_private_transfer(
+    token_id: &[u8; 32],
+    commitment: &[u8; 32],      // New commitment for recipient
+    nullifier: &[u8; 32],       // Spent commitment nullifier
+    proof: &[u8]                // ZK-SNARK proof
+) -> Result<(), Error> {
+
+    let private_contract = get_private_contract(token_id)?;
+
+    // 1. Verify ZK proof
+    // Proof proves:
+    //   - You know a commitment in the Merkle tree
+    //   - You know the salt for that commitment
+    //   - You're creating a valid new commitment
+    //   - The nullifier corresponds to the spent commitment
+    //   - Amount conservation: input_amount >= output_amount
+
+    let verification_result = verify_halo2_proof(
+        proof,
+        &private_contract.merkle_root,
+        nullifier,
+        commitment
+    )?;
+
+    if !verification_result.is_valid {
+        return Err(Error::InvalidProof);
+    }
+
+    // 2. Check nullifier hasn't been used (prevent double-spend)
+    if private_contract.nullifiers.contains(nullifier) {
+        return Err(Error::DoubleSpendAttempt);
+    }
+
+    // 3. Add nullifier to prevent reuse
+    private_contract.nullifiers.insert(*nullifier);
+
+    // 4. Add new commitment to Merkle tree
+    private_contract.merkle_tree.insert(*commitment)?;
+
+    // 5. Update Merkle root
+    let new_root = private_contract.merkle_tree.root();
+    private_contract.merkle_root = new_root;
+
+    // 6. Emit event (no details!)
+    emit_event(PrivateTransferEvent {
+        token_id: *token_id,
+        nullifier_count: private_contract.nullifiers.len(),
+        commitment_count: private_contract.merkle_tree.leaves_count(),
+        new_root
+    });
+
+    Ok(())
+}
+```
+
+#### Visual: Amount Splitting
+
+```
+Initial State:
+┌──────────────────────────────────────────────────┐
+│ Your Private Balance: 5,000 PRIV                 │
+│ Commitment: 0xABCD... (amount hidden)            │
+└──────────────────────────────────────────────────┘
+
+                    Split into 2 transfers
+                           ▼
+        ┌────────────────────┴────────────────────┐
+        │                                         │
+        ▼                                         ▼
+┌──────────────────────┐              ┌──────────────────────┐
+│ Transfer to A:       │              │ Transfer to B:       │
+│ Amount: 2000 PRIV    │              │ Amount: 1500 PRIV    │
+│ (HIDDEN)             │              │ (HIDDEN)             │
+│                      │              │                      │
+│ New Commitment:      │              │ New Commitment:      │
+│ 0x9a8b7c6d...        │              │ 0x5e4d3c2b...        │
+│                      │              │                      │
+│ Nullifier:           │              │ Nullifier:           │
+│ 0x1a2b3c4d...        │              │ 0x6f7e8d9c...        │
+└──────────────────────┘              └──────────────────────┘
+
+                    Remaining
+                           ▼
+┌──────────────────────────────────────────────────┐
+│ Your New Private Balance: 1,500 PRIV             │
+│ (5000 - 2000 - 1500 = 1500)                      │
+│ New Commitment: 0x3f2e1d0c... (amount hidden)    │
+└──────────────────────────────────────────────────┘
+
+Final Merkle Tree:
+        Root: 0xNEW_ROOT...
+       /    |    \
+      /     |     \
+   [0x9a8b] [0x5e4d] [0x3f2e]
+     ↑        ↑        ↑
+   Recip A  Recip B  You
+   2000     1500     1500
+  (hidden) (hidden) (hidden)
+```
+
+---
+
+## Double-Spend Prevention
+
+### How Nullifiers Prevent Double-Spending
+
+```rust
+// Nullifier Generation
+pub fn generate_nullifier(
+    commitment: &[u8; 32],
+    salt: &[u8; 32],
+    nonce: &str
+) -> [u8; 32] {
+    let data = [commitment, salt, nonce.as_bytes()].concat();
+    keccak256(&data)
+}
+
+// Example:
+let commitment = 0xABCD1234...;
+let salt = 0x9876FEDC...;
+let nullifier = generate_nullifier(commitment, salt, "spend1");
+// Result: 0x1a2b3c4d...
+
+// This nullifier is UNIQUE to this spend
+// If you try to spend the same commitment again,
+// you'd generate the same nullifier → rejected!
+```
+
+### Double-Spend Attempt Example
+
+```javascript
+// Attempt 1: Valid transfer
+const tx1 = {
+  commitment: newCommitment1,
+  nullifier: 0x1a2b3c4d...,  // First time seeing this
+  proof: validProof1
+};
+
+await sendTransaction(tx1);
+// Result: ✓ SUCCESS
+// Nullifier 0x1a2b3c4d... added to nullifier set
+
+// Attempt 2: Try to spend same commitment again
+const tx2 = {
+  commitment: newCommitment2,
+  nullifier: 0x1a2b3c4d...,  // SAME nullifier!
+  proof: validProof2
+};
+
+await sendTransaction(tx2);
+// Result: ✗ REJECTED
+// Error: "Nullifier already used"
+```
+
+### Rust Nullifier Check
+
+```rust
+pub fn verify_and_add_nullifier(
+    nullifier: &[u8; 32],
+    nullifier_set: &mut HashSet<[u8; 32]>
+) -> Result<(), Error> {
+
+    // Check if nullifier already exists
+    if nullifier_set.contains(nullifier) {
+        return Err(Error::DoubleSpendAttempt {
+            nullifier: hex::encode(nullifier),
+            message: "This commitment has already been spent"
+        });
+    }
+
+    // Add to set (permanent record)
+    nullifier_set.insert(*nullifier);
+
+    // Log for transparency
+    log::info!(
+        "Nullifier added: {}. Total nullifiers: {}",
+        hex::encode(nullifier),
+        nullifier_set.len()
+    );
+
+    Ok(())
+}
+```
+
+### Visual: Nullifier Tracking
+
+```
+Transaction History:
+
+Block 102:
+  TX: 0x7dd82e3b...
+  Nullifier: 0x1a2b3c4d... ✓ Added
+  Status: SUCCESS
+
+Block 103:
+  TX: 0x8ee93f4c...
+  Nullifier: 0x2b3c4d5e... ✓ Added
+  Status: SUCCESS
+
+Block 104:
+  TX: 0x9ff04a5d...
+  Nullifier: 0x1a2b3c4d... ✗ DUPLICATE!
+  Status: REJECTED (double-spend attempt)
+
+Nullifier Set (permanent):
+{
+  0x1a2b3c4d...,  ← From block 102
+  0x2b3c4d5e...,  ← From block 103
+  0x3c4d5e6f...,
+  0x4d5e6f7a...,
+  ...
+}
+
+Any transaction trying to reuse a nullifier = REJECTED
+```
+
+---
+
+## Privacy Mechanisms
+
+### 1. Poseidon Hash (Commitment Creation)
+
+```rust
+use halo2_gadgets::poseidon::Hash as PoseidonHash;
+
+pub fn create_commitment(
+    amount: u128,
+    salt: &[u8; 32],
+    owner: &[u8; 20]
+) -> [u8; 32] {
+
+    // Convert inputs to field elements
+    let amount_fe = Fp::from(amount);
+    let salt_fe = bytes_to_field_element(salt);
+    let owner_fe = bytes_to_field_element(owner);
+
+    // Poseidon hash (ZK-friendly)
+    let commitment = PoseidonHash::init(
+        PoseidonSpec::new(8, 57)
+    ).hash([amount_fe, salt_fe, owner_fe]);
+
+    // Convert back to bytes
+    field_element_to_bytes(&commitment)
+}
+
+// Example:
+let commitment = create_commitment(
+    5000 * 10^18,
+    0x9876FEDC...,
+    0x239fA762...
+);
+
+// Result: 0x7f3e9c2a5b1d8e4f6c0a3b7d9e5f1c8a...
+// This commitment HIDES:
+//   - Amount: 5000
+//   - Salt: 0x9876FEDC...
+//   - Owner: 0x239fA762...
+```
+
+### 2. Merkle Tree (Privacy State)
+
+```rust
+pub struct PrivacyMerkleTree {
+    depth: usize,                    // 32 levels
+    leaves: Vec<[u8; 32]>,           // Commitments
+    nodes: HashMap<usize, [u8; 32]>, // Internal nodes
+    root: [u8; 32]                   // Current root
+}
+
+impl PrivacyMerkleTree {
+
+    pub fn insert(&mut self, commitment: [u8; 32]) -> Result<usize, Error> {
+        let index = self.leaves.len();
+        self.leaves.push(commitment);
+
+        // Update tree from leaf to root
+        let mut current_index = index;
+        let mut current_hash = commitment;
+
+        for level in 0..self.depth {
+            let sibling_index = current_index ^ 1; // XOR with 1
+            let sibling_hash = self.get_node(level, sibling_index);
+
+            // Hash current + sibling
+            current_hash = if current_index % 2 == 0 {
+                poseidon_hash([current_hash, sibling_hash])
+            } else {
+                poseidon_hash([sibling_hash, current_hash])
+            };
+
+            // Move up one level
+            current_index /= 2;
+            self.nodes.insert((level + 1) * 10000 + current_index, current_hash);
+        }
+
+        // Update root
+        self.root = current_hash;
+        Ok(index)
+    }
+
+    pub fn get_merkle_path(&self, leaf_index: usize) -> Vec<[u8; 32]> {
+        let mut path = Vec::new();
+        let mut index = leaf_index;
+
+        for level in 0..self.depth {
+            let sibling_index = index ^ 1;
+            let sibling = self.get_node(level, sibling_index);
+            path.push(sibling);
+            index /= 2;
+        }
+
+        path
+    }
+}
+```
+
+#### Visual: Merkle Tree Structure
+
+```
+After 3 private transactions:
+
+                    Root
+              0xNEW_ROOT_HASH
+                 /        \
+                /          \
+               /            \
+        0xABCD1234      0x5678DCBA
+         /    \          /    \
+        /      \        /      \
+   0x9a8b  0x5e4d  0x3f2e  0x0000
+     ↑      ↑       ↑       ↑
+  Commit1 Commit2 Commit3  Empty
+
+Commitment Details (HIDDEN from public):
+- Commit1: Recipient A, 2000 PRIV
+- Commit2: Recipient B, 1500 PRIV
+- Commit3: You, 1500 PRIV
+
+Public can see:
+✓ Root hash: 0xNEW_ROOT_HASH
+✓ 3 commitments exist
+✓ Merkle tree updated
+
+Public CANNOT see:
+✗ Who owns which commitment
+✗ Amounts in commitments
+✗ Recipients of transfers
+```
+
+### 3. ZK-SNARK Proofs (Halo2)
+
+```rust
+use halo2_proofs::{
+    plonk::*,
+    circuit::*,
+    poly::commitment::Params
+};
+
+pub struct PrivateTransferCircuit {
+    // Secret (private) inputs
+    old_commitment: Value<Fp>,
+    old_amount: Value<Fp>,
+    old_salt: Value<Fp>,
+    old_owner: Value<Fp>,
+
+    new_amount: Value<Fp>,
+    new_salt: Value<Fp>,
+    new_owner: Value<Fp>,
+
+    merkle_path: Vec<Value<Fp>>,
+
+    // Public inputs
+    old_nullifier: Value<Fp>,
+    new_commitment: Value<Fp>,
+    merkle_root: Value<Fp>
+}
+
+impl Circuit<Fp> for PrivateTransferCircuit {
+
+    fn synthesize(
+        &self,
+        config: Self::Config,
+        mut layouter: impl Layouter<Fp>
+    ) -> Result<(), Error> {
+
+        // 1. Verify old commitment exists
+        let computed_old_commitment = poseidon_hash_gadget(
+            layouter.namespace(|| "old commitment"),
+            [self.old_amount, self.old_salt, self.old_owner]
+        )?;
+
+        layouter.constrain_equal(
+            computed_old_commitment,
+            self.old_commitment
+        )?;
+
+        // 2. Verify old commitment in Merkle tree
+        let mut current_hash = computed_old_commitment;
+        for (i, sibling) in self.merkle_path.iter().enumerate() {
+            current_hash = poseidon_hash_gadget(
+                layouter.namespace(|| format!("merkle level {}", i)),
+                [current_hash, *sibling]
+            )?;
+        }
+
+        layouter.constrain_equal(
+            current_hash,
+            self.merkle_root  // Must equal public root
+        )?;
+
+        // 3. Verify nullifier correctly generated
+        let computed_nullifier = poseidon_hash_gadget(
+            layouter.namespace(|| "nullifier"),
+            [computed_old_commitment, self.old_salt]
+        )?;
+
+        layouter.constrain_equal(
+            computed_nullifier,
+            self.old_nullifier  // Must equal public nullifier
+        )?;
+
+        // 4. Verify new commitment correctly generated
+        let computed_new_commitment = poseidon_hash_gadget(
+            layouter.namespace(|| "new commitment"),
+            [self.new_amount, self.new_salt, self.new_owner]
+        )?;
+
+        layouter.constrain_equal(
+            computed_new_commitment,
+            self.new_commitment  // Must equal public commitment
+        )?;
+
+        // 5. Verify amount conservation
+        layouter.constrain_equal(
+            self.old_amount,
+            self.new_amount  // Amounts must match (no creation/destruction)
+        )?;
+
+        Ok(())
+    }
+}
+
+// Generate proof
+pub fn generate_proof(
+    params: &Params<EqAffine>,
+    circuit: PrivateTransferCircuit
+) -> Result<Vec<u8>, Error> {
+
+    let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
+
+    create_proof(
+        params,
+        &pk,
+        &[circuit],
+        &[],
+        OsRng,
+        &mut transcript
+    )?;
+
+    Ok(transcript.finalize())
+}
+
+// Verify proof
+pub fn verify_proof(
+    params: &Params<EqAffine>,
+    proof: &[u8],
+    public_inputs: &[Fp]
+) -> Result<bool, Error> {
+
+    let strategy = SingleVerifier::new(params);
+    let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(proof);
+
+    Ok(verify_proof(
+        params,
+        &vk,
+        strategy,
+        public_inputs,
+        &mut transcript
+    ).is_ok())
+}
+```
+
+---
+
+## Complete Transaction Flow
+
+### Full End-to-End Example
+
+```
+User Story: Alice deploys token, switches to private, sends to Bob
+
+════════════════════════════════════════════════════════════════
+STEP 1: Token Deployment
+════════════════════════════════════════════════════════════════
+
+Alice's Computer:
+├─ Create deployment transaction
+│  ├─ Method: DEPLOY_TOKEN (0x01000000)
+│  ├─ Name: "PrivacyToken"
+│  ├─ Symbol: "PRIV"
+│  ├─ Supply: 1,000,000 * 10^18
+│  └─ Decimals: 18
+│
+├─ Encode data (132 bytes)
+├─ Sign with private key
+└─ Send to validator
+
+Validator 1 (0x239fA762...):
+├─ Receive transaction
+├─ Decode: tx_encoding.go → DecodePrivacyOperation()
+├─ Validate signature ✓
+├─ Execute:
+│  ├─ Generate token ID: keccak256("PrivacyToken" + "PRIV")
+│  └─ Call Rust FFI: deploy_dual_token()
+│
+Rust FFI (libqoranet_privacy.so):
+├─ Create public contract (ERC-20)
+│  └─ Balance[Alice] = 1,000,000 PRIV
+│
+├─ Create private contract (Shielded)
+│  ├─ Merkle tree: EMPTY
+│  ├─ Commitments: []
+│  └─ Nullifiers: {}
+│
+└─ Return addresses:
+   ├─ Token ID: 0xa3eaee0c...
+   ├─ Public: 0xABCD1234...
+   └─ Private: 0x9876FEDC...
+
+Validator 1:
+├─ Create receipt
+├─ Include in block 101
+└─ Broadcast to network
+
+Validators 2 & 3:
+├─ Receive block 101
+├─ Verify transactions
+└─ Confirm consensus ✓
+
+Result:
+Token Created!
+├─ ID: 0xa3eaee0c...
+├─ Public: 0xABCD1234... (1M PRIV visible)
+└─ Private: 0x9876FEDC... (0 PRIV hidden)
+
+════════════════════════════════════════════════════════════════
+STEP 2: Switch to Private (Hide 10,000 PRIV)
+════════════════════════════════════════════════════════════════
+
+Alice's Computer:
+├─ Generate random salt: 0x9876FEDC...
+│
+├─ Calculate commitment:
+│  └─ Poseidon(10000, salt, Alice) = 0xABCD1234...
+│
+├─ Create switch transaction
+│  ├─ Method: SWITCH_MODE (0x02000000)
+│  ├─ Token ID: 0xa3eaee0c...
+│  ├─ Amount: 10,000 * 10^18
+│  └─ Direction: To Private (1)
+│
+└─ Send transaction
+
+Validator:
+├─ Decode switch operation
+└─ Call Rust FFI: switch_to_private()
+
+Rust FFI:
+├─ Burn 10,000 from public contract
+│  └─ Alice public: 1,000,000 → 990,000 PRIV ✓
+│
+├─ Create commitment: 0xABCD1234...
+│
+├─ Insert into Merkle tree
+│  └─ Root: 0x0000... → 0x7f3e9c2a...
+│
+├─ Encrypt note with Alice's key
+│  └─ {amount: 10000, salt: 0x9876..., owner: Alice}
+│
+└─ Return success
+
+Result:
+Alice's Balances:
+├─ Public: 990,000 PRIV (visible)
+└─ Private: 10,000 PRIV (HIDDEN) ✓
+
+Merkle Tree:
+       Root: 0x7f3e9c2a...
+          /
+   [0xABCD1234]  ← Alice's 10K (hidden)
+
+════════════════════════════════════════════════════════════════
+STEP 3: Private Transfer to Bob (5,000 PRIV)
+════════════════════════════════════════════════════════════════
+
+Alice's Computer:
+├─ Generate Bob's commitment
+│  ├─ New salt: 0x1234ABCD...
+│  └─ Commitment: Poseidon(5000, salt, Bob) = 0x5678DCBA...
+│
+├─ Generate her change commitment
+│  ├─ New salt: 0xFEDC9876...
+│  └─ Commitment: Poseidon(5000, salt, Alice) = 0x9ABC4567...
+│
+├─ Generate nullifier for spent commitment
+│  └─ Nullifier: Poseidon(0xABCD1234, 0x9876FEDC) = 0x1111AAAA...
+│
+├─ Get Merkle path for her commitment
+│  └─ Path: [sibling hashes from leaf to root]
+│
+├─ Generate ZK proof
+│  ├─ Secret inputs:
+│  │  ├─ Old commitment: 0xABCD1234...
+│  │  ├─ Old amount: 10,000
+│  │  ├─ Old salt: 0x9876FEDC...
+│  │  ├─ Send amount: 5,000
+│  │  ├─ Change amount: 5,000
+│  │  ├─ Bob's address
+│  │  └─ Merkle path
+│  │
+│  └─ Public inputs:
+│     ├─ Nullifier: 0x1111AAAA...
+│     ├─ Bob's commitment: 0x5678DCBA...
+│     ├─ Change commitment: 0x9ABC4567...
+│     └─ Merkle root: 0x7f3e9c2a...
+│
+├─ Encode transfer transaction
+│  ├─ Method: PRIVATE_TRANSFER (0x03000000)
+│  ├─ Token ID: 0xa3eaee0c...
+│  ├─ Commitments: [0x5678DCBA, 0x9ABC4567]
+│  ├─ Nullifier: 0x1111AAAA...
+│  └─ Proof: [256 bytes]
+│
+└─ Send transaction
+
+Validator:
+├─ Decode private transfer
+└─ Call Rust FFI: process_private_transfer()
+
+Rust FFI:
+├─ Verify ZK proof ✓
+│  ├─ Nullifier matches old commitment ✓
+│  ├─ Old commitment in Merkle tree ✓
+│  ├─ New commitments valid ✓
+│  └─ Amount conservation ✓
+│
+├─ Check nullifier not used ✓
+│
+├─ Add nullifier to set
+│  └─ Nullifiers: {0x1111AAAA...}
+│
+├─ Add Bob's commitment to tree
+│  └─ Merkle tree: [..., 0x5678DCBA]
+│
+├─ Add Alice's change to tree
+│  └─ Merkle tree: [..., 0x9ABC4567]
+│
+└─ Update Merkle root
+   └─ Root: 0x7f3e9c2a... → 0xNEW_ROOT...
+
+Result:
+Private Balances (ALL HIDDEN):
+├─ Alice: 5,000 PRIV ✓
+└─ Bob: 5,000 PRIV ✓
+
+Merkle Tree:
+         Root: 0xNEW_ROOT...
+        /    |    \
+   [spent] [Bob] [Alice]
+            5K    5K
+         (hidden)(hidden)
+
+Public Visibility:
+✓ Can see: Transaction occurred
+✓ Can see: 1 nullifier used
+✓ Can see: 2 new commitments
+✗ CANNOT see: Sender (Alice)
+✗ CANNOT see: Recipient (Bob)
+✗ CANNOT see: Amount (5000)
+
+════════════════════════════════════════════════════════════════
+STEP 4: Bob Switches to Public (Reveal 2,000 PRIV)
+════════════════════════════════════════════════════════════════
+
+Bob's Computer:
+├─ Generate nullifier for his commitment
+│  └─ Nullifier: Poseidon(0x5678DCBA, his_salt) = 0x2222BBBB...
+│
+├─ Generate ZK proof
+│  ├─ Secret: His 5000 PRIV commitment
+│  └─ Public: Nullifier, amount 2000
+│
+├─ Create switch transaction
+│  ├─ Method: SWITCH_MODE (0x02000000)
+│  ├─ Amount: 2,000 * 10^18
+│  ├─ Direction: To Public (0)
+│  └─ Proof attached
+│
+└─ Send transaction
+
+Rust FFI:
+├─ Verify proof ✓
+├─ Check nullifier not used ✓
+├─ Add nullifier: {0x1111AAAA, 0x2222BBBB}
+├─ Mint 2000 to Bob's public account
+│  └─ Bob public: 0 → 2,000 PRIV ✓
+└─ Update Merkle tree
+
+Result:
+Bob's Balances:
+├─ Public: 2,000 PRIV (visible) ✓
+└─ Private: 3,000 PRIV (hidden) ✓
+
+Total Supply Verification:
+Public tokens:  990,000 (Alice) + 2,000 (Bob) = 992,000
+Private tokens: 5,000 (Alice) + 3,000 (Bob) = 8,000
+Total: 1,000,000 ✓ (matches original supply)
+
+════════════════════════════════════════════════════════════════
+```
+
+---
+
+## Summary
+
+### What Actually Happened
+
+1. **Token Deployment**
+   - Created 2 addresses (public ERC-20 + private shielded)
+   - All 1M tokens start in public mode (visible)
+   - Private contract initialized with empty Merkle tree
+
+2. **Public → Private Switch**
+   - Burned tokens from public contract
+   - Created Poseidon commitment hiding amount
+   - Added commitment to Merkle tree
+   - Amount now HIDDEN from public view
+
+3. **Private Transfers with Splitting**
+   - Generated ZK proofs proving ownership without revealing amount
+   - Created new commitments for recipients
+   - Used nullifiers to prevent double-spending
+   - Updated Merkle tree with new commitments
+   - ALL amounts and recipients HIDDEN
+
+4. **Private → Public Switch**
+   - Proved ownership of private tokens via ZK proof
+   - Added nullifier to prevent reuse
+   - Minted tokens to public contract
+   - Amount now visible again
+
+### Privacy Guarantees
+
+**What Public Can See:**
+- Transactions occurred
+- Gas consumed
+- Merkle root updates
+- Number of commitments/nullifiers
+
+**What Public CANNOT See:**
+- Private balances
+- Transfer amounts
+- Sender addresses
+- Recipient addresses
+- Transaction history links
+
+### Security Features
+
+1. **Double-Spend Prevention**: Nullifiers mark commitments as spent
+2. **Amount Conservation**: ZK proofs verify inputs = outputs
+3. **Merkle Proof**: Proves commitment exists without revealing it
+4. **Atomic State**: Two-phase commit ensures consistency
+5. **Consensus**: All validators verify same privacy root
+
+---
+
+*End of Documentation*

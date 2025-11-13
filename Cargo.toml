@@ -1,0 +1,109 @@
+[package]
+name = "qoranet-privacy"
+version = "0.1.0"
+edition = "2021"
+authors = ["QoraNet Blockcian Team"]
+description = "Privacy primitives for QoraNet Blockcian L1 (adapted from Qora)"
+license = "GPL-3.0-or-later"
+
+[lib]
+name = "qoranet_privacy"
+# C FFI dynamic library for separate nightly/stable build
+crate-type = ["cdylib", "rlib"]
+
+# Optional binary for parameter generation
+[[bin]]
+name = "gen_params"
+path = "src/bin/gen_params.rs"
+required-features = ["bin"]
+
+[dependencies]
+# Core
+anyhow = "1.0"
+# Tokio is now required (not optional) for proof system
+tokio = { version = "1.47.1", features = ["full"] }
+futures = { version = "0.3", optional = true }
+serde = { version = "1.0.226", features = ["derive"] }
+serde_json = "1.0.145"
+
+# Ethereum types
+ethereum-types = "0.15"
+ethers = { version = "2.0.14", optional = true }
+
+# Cryptography
+sha3 = "0.10.8"
+sha2 = "0.10"
+hex = "0.4.3"
+rand = "0.8.5"
+secp256k1 = { version = "0.28.2", features = [
+    "recovery",
+    "global-context",
+    "rand",
+    "serde",
+] }
+constant_time_eq = "0.3"
+aes-gcm = "0.10"
+rand_core = "0.6"
+num-bigint = "0.4"
+
+# ZK-SNARK libraries - halo2-base for REAL production-grade ZK proofs
+# Used by off-chain workers (std environment)
+halo2-base = { git = "https://github.com/axiom-crypto/halo2-lib", tag = "v0.4.1", features = [
+    "halo2-axiom",
+    "display",
+], optional = true }
+ff = "0.13.0"
+group = "0.13.0"
+blake2b_simd = "1.0.3"
+
+# Storage & Utils
+parking_lot = "0.12.4"
+lazy_static = "1.5.0"
+once_cell = "1.20.2"
+chrono = "0.4.42"
+thiserror = "2.0.16"
+bincode = "1.3.3"
+tracing = "0.1.41"
+rayon = "1.7"
+
+# HTTP client for ceremony parameter download
+ureq = { version = "2.10", optional = true }
+
+[dev-dependencies]
+tempfile = "3.23.0"
+criterion = "0.7.0"
+
+[features]
+default = ["std"]
+
+# Standard library support (for off-chain workers in pallet)
+std = [
+    "ethereum-types/std",
+    "serde/std",
+    "halo2-base",         # Enable REAL ZK proofs via halo2-base
+]
+
+# Network privacy features (Dandelion++ P2P mixing) - for separate P2P node, not pallet
+# Note: tokio is now always available (non-optional), so we only need futures here
+network = ["std", "futures"]
+
+# Ethereum integration (optional, not needed for pallet)
+ethereum = ["ethers", "ureq"]
+
+# Binary features
+bin = ["std", "network", "ethereum", "ureq"]
+
+# Runtime features (for Substrate no_std integration - MINIMAL, no ZK)
+runtime = []
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+# This library uses Rust nightly due to halo2 ZK dependencies
+# See rust-toolchain.toml for the specific nightly version

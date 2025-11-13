@@ -1,0 +1,935 @@
+ Downloading crates ...
+  Downloaded getrandom v0.2.16
+  Downloaded cc v1.2.41
+  Downloaded proc-macro2 v1.0.102
+  Downloaded zerocopy-derive v0.8.27
+  Downloaded subtle v2.6.1
+ Downloading crates ...
+  Downloaded criterion v0.7.0
+   Compiling cfg-if v1.0.4
+   Compiling proc-macro2 v1.0.102
+   Compiling unicode-ident v1.0.20
+   Compiling quote v1.0.41
+   Compiling version_check v0.9.5
+   Compiling typenum v1.19.0
+   Compiling zerocopy v0.8.27
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling crossbeam-utils v0.8.21
+   Compiling subtle v2.6.1
+   Compiling radium v0.7.0
+   Compiling getrandom v0.2.16
+   Compiling autocfg v1.5.0
+   Compiling rand_core v0.6.4
+   Compiling tap v1.0.1
+   Compiling generic-array v0.14.9
+   Compiling wyz v0.5.1
+   Compiling static_assertions v1.1.0
+   Compiling funty v2.0.0
+   Compiling spin v0.9.8
+   Compiling cpufeatures v0.2.17
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling num-traits v0.2.19
+   Compiling rayon-core v1.13.0
+   Compiling lazy_static v1.5.0
+   Compiling crunchy v0.2.4
+   Compiling rustc-hex v2.1.0
+   Compiling bitvec v1.0.1
+   Compiling either v1.15.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling syn v2.0.108
+   Compiling syn v1.0.109
+   Compiling shlex v1.3.0
+   Compiling constant_time_eq v0.3.1
+   Compiling arrayref v0.3.9
+   Compiling crossbeam-deque v0.8.6
+   Compiling find-msvc-tools v0.1.4
+   Compiling arrayvec v0.7.6
+   Compiling paste v1.0.15
+   Compiling crypto-common v0.1.6
+   Compiling block-buffer v0.10.4
+   Compiling byteorder v1.5.0
+   Compiling bytes v1.10.1
+   Compiling digest v0.10.7
+   Compiling num-integer v0.1.46
+   Compiling blake2b_simd v1.0.3
+   Compiling cc v1.2.41
+   Compiling ppv-lite86 v0.2.21
+   Compiling rayon v1.11.0
+   Compiling rlp v0.6.1
+   Compiling inout v0.1.4
+   Compiling windows-targets v0.52.6
+   Compiling rand_chacha v0.3.1
+   Compiling tiny-keccak v2.0.2
+   Compiling halo2curves-axiom v0.7.0
+   Compiling once_cell v1.21.3
+   Compiling rand v0.8.5
+   Compiling thiserror v1.0.69
+   Compiling tracing-core v0.1.34
+   Compiling impl-rlp v0.4.0
+   Compiling cipher v0.4.4
+   Compiling fixed-hash v0.8.0
+   Compiling secp256k1-sys v0.9.2
+   Compiling num-bigint v0.4.6
+   Compiling windows-sys v0.59.0
+   Compiling sha2 v0.10.9
+   Compiling universal-hash v0.5.1
+   Compiling proc-macro-error-attr2 v2.0.0
+   Compiling crossbeam-queue v0.3.12
+   Compiling crossbeam-channel v0.5.15
+   Compiling parking_lot_core v0.9.12
+   Compiling serde_json v1.0.145
+   Compiling opaque-debug v0.3.1
+   Compiling keccak v0.1.5
+   Compiling windows-link v0.2.1
+   Compiling pin-project-lite v0.2.16
+   Compiling polyval v0.6.2
+   Compiling sha3 v0.10.8
+   Compiling proc-macro-error2 v2.0.1
+   Compiling ff v0.13.1
+   Compiling maybe-rayon v0.1.1
+   Compiling crossbeam v0.8.4
+   Compiling colored v2.2.0
+   Compiling itertools v0.11.0
+   Compiling group v0.13.0
+   Compiling rand_xorshift v0.3.0
+   Compiling itoa v1.0.15
+   Compiling rustc-hash v1.1.0
+   Compiling ryu v1.0.20
+   Compiling pairing v0.23.0
+   Compiling pasta_curves v0.5.1
+   Compiling memchr v2.7.6
+   Compiling anyhow v1.0.100
+   Compiling scopeguard v1.2.0
+   Compiling log v0.4.28
+   Compiling thiserror v2.0.17
+   Compiling smallvec v1.15.1
+   Compiling lock_api v0.4.14
+   Compiling ark-std v0.3.0
+   Compiling ghash v0.5.1
+   Compiling aes v0.8.4
+   Compiling ctr v0.9.2
+   Compiling aead v0.5.2
+   Compiling parking_lot v0.12.5
+   Compiling chrono v0.4.42
+   Compiling serde_derive v1.0.228
+   Compiling tracing-attributes v0.1.30
+   Compiling unroll v0.1.5
+   Compiling thiserror-impl v1.0.69
+   Compiling getset v0.1.6
+   Compiling thiserror-impl v2.0.17
+   Compiling aes-gcm v0.10.3
+   Compiling tracing v0.1.41
+   Compiling poseidon-primitives v0.1.1
+   Compiling hex v0.4.3
+   Compiling serde_arrays v0.1.0
+   Compiling impl-serde v0.5.0
+   Compiling bincode v1.3.3
+   Compiling secp256k1 v0.28.2
+   Compiling ethbloom v0.14.1
+   Compiling uint v0.10.0
+   Compiling primitive-types v0.13.1
+   Compiling ethereum-types v0.15.1
+   Compiling halo2-axiom v0.4.5
+   Compiling halo2-base v0.4.1 (https://github.com/axiom-crypto/halo2-lib?tag=v0.4.1#4dc5c483)
+   Compiling qoranet-privacy v0.1.0 (D:\Downloads\QoraNet+Blockcian-V1\privacy-lib)
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+ --> src\ffi.rs:9:5
+  |
+9 | use tokio::sync::RwLock;
+  |     ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0432]: unresolved import `super::secure_privacy`
+  --> src\ffi.rs:15:12
+   |
+15 | use super::secure_privacy::{SecurePrivacyPool, PrivacyConfig};
+   |            ^^^^^^^^^^^^^^
+   |            |
+   |            unresolved import
+   |            help: a similar path exists: `crate::nullifiers::secure_privacy`
+
+error[E0432]: unresolved import `super::state`
+  --> src\ffi.rs:17:12
+   |
+17 | use super::state::GlobalState;
+   |            ^^^^^
+   |            |
+   |            unresolved import
+   |            help: a similar path exists: `halo2_base::poseidon::hasher::state`
+
+error[E0432]: unresolved import `super::privacy`
+  --> src\ffi.rs:18:12
+   |
+18 | use super::privacy::PrivacyStateManager;
+   |            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0432]: unresolved import `super::fees_usd`
+  --> src\ffi.rs:19:12
+   |
+19 | use super::fees_usd::{USDFeeSystem, FeeConfig};
+   |            ^^^^^^^^ could not find `fees_usd` in the crate root
+
+error[E0432]: unresolved import `super::universal_switch`
+  --> src\ffi.rs:20:12
+   |
+20 | use super::universal_switch::{UniversalSwitch, SwitchConfig};
+   |            ^^^^^^^^^^^^^^^^ could not find `universal_switch` in the crate root
+
+error[E0432]: unresolved import `super::token_factory`
+  --> src\ffi.rs:21:12
+   |
+21 | use super::token_factory::TokenFactory;
+   |            ^^^^^^^^^^^^^ could not find `token_factory` in the crate root
+
+error[E0432]: unresolved import `super::stealth_addresses`
+  --> src\ffi.rs:22:12
+   |
+22 | use super::stealth_addresses::StealthAddressManager;
+   |            ^^^^^^^^^^^^^^^^^
+   |            |
+   |            unresolved import
+   |            help: a similar path exists: `crate::stealth::stealth_addresses`
+
+error[E0432]: unresolved import `super::network_privacy`
+  --> src\ffi.rs:23:12
+   |
+23 | use super::network_privacy::{NetworkPrivacyLayer, NetworkPrivacyConfig, NetworkInterface};
+   |            ^^^^^^^^^^^^^^^ could not find `network_privacy` in the crate root
+   |
+note: found an item that was configured out
+  --> src\lib.rs:63:9
+   |
+63 | pub mod network_privacy;
+   |         ^^^^^^^^^^^^^^^
+note: the item is gated behind the `network` feature
+  --> src\lib.rs:62:7
+   |
+62 | #[cfg(feature = "network")]
+   |       ^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+   --> src\ffi.rs:394:24
+    |
+394 |             use crate::privacy::common_types::Proof;
+    |                        ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+    --> src\ffi.rs:1338:16
+     |
+1338 |     use crate::privacy::atomic_state::PrivacyOperation;
+     |                ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0432]: unresolved import `super::halo2_circuits`
+  --> src\ffi.rs:24:12
+   |
+24 | use super::halo2_circuits::ProductionProofSystem;
+   |            ^^^^^^^^^^^^^^ could not find `halo2_circuits` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+ --> src\ffi_dual_token.rs:6:12
+  |
+6 | use crate::privacy::common_types::TokenId;
+  |            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+ --> src\ffi_dual_token.rs:7:12
+  |
+7 | use crate::privacy::ffi::{FFI_RUNTIME, PrivacySystemHandleWrapper, validate_handle_wrapper_mut};
+  |            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+ --> src\ffi_precompiles.rs:9:12
+  |
+9 | use crate::privacy::poseidon::poseidon_hash as poseidon_hash_fn;
+  |            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+  --> src\ffi_precompiles.rs:10:12
+   |
+10 | use crate::privacy::halo2_circuits::ProductionProofSystem;
+   |            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+ --> src\ffi_private_transfer.rs:7:12
+  |
+7 | use crate::privacy::{
+  |            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+  --> src\ffi_private_transfer.rs:88:20
+   |
+88 |         use crate::privacy::secure_privacy::SecureNullifierGenerator;
+   |                    ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+   --> src\ffi_private_transfer.rs:107:20
+    |
+107 |         use crate::privacy::secure_privacy::SecureCommitmentScheme;
+    |                    ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0432]: unresolved import `super::amount_splitter`
+  --> src\ffi_amount_privacy.rs:8:12
+   |
+8  | use super::amount_splitter::{AmountSplitter, AmountMixer};
+   |            ^^^^^^^^^^^^^^^ could not find `amount_splitter` in the crate root
+   |
+note: found an item that was configured out
+  --> src\lib.rs:60:9
+   |
+60 | pub mod amount_splitter;
+   |         ^^^^^^^^^^^^^^^
+note: the item is gated behind the `network` feature
+  --> src\lib.rs:59:7
+   |
+59 | #[cfg(feature = "network")]
+   |       ^^^^^^^^^^^^^^^^^^^
+
+error[E0432]: unresolved import `super::universal_switch`
+  --> src\ffi_universal_switch.rs:11:12
+   |
+11 | use super::universal_switch::{UniversalSwitch, SwitchConfig};
+   |            ^^^^^^^^^^^^^^^^ could not find `universal_switch` in the crate root
+
+error[E0432]: unresolved import `super::halo2_circuits`
+  --> src\ffi_universal_switch.rs:13:12
+   |
+13 | use super::halo2_circuits::ProductionProofSystem;
+   |            ^^^^^^^^^^^^^^ could not find `halo2_circuits` in the crate root
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+  --> src\ffi.rs:47:37
+   |
+47 | pub(crate) static FFI_RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
+   |                                     ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+  --> src\ffi.rs:73:44
+   |
+73 |     pub(crate) network_privacy: Arc<crate::privacy::network_privacy::NetworkPrivacyLayer>,
+   |                                            ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+  --> src\ffi.rs:74:41
+   |
+74 |     pub(crate) atomic_state: Arc<crate::privacy::atomic_state::AtomicPrivacyState>,
+   |                                         ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+   --> src\ffi.rs:165:40
+    |
+165 |     let atomic_state = Arc::new(crate::privacy::atomic_state::AtomicPrivacyState::new());
+    |                                        ^^^^^^^ could not find `privacy` in the crate root
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_dual_token.rs:183:18
+    |
+183 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_dual_token.rs:238:18
+    |
+238 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_dual_token.rs:396:18
+    |
+396 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_dual_token.rs:479:18
+    |
+479 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_dual_token.rs:547:18
+    |
+547 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_network_privacy.rs:197:22
+    |
+197 |         let _guard = tokio::runtime::Handle::current();
+    |                      ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+  --> src\ffi_private_transfer.rs:63:18
+   |
+63 |     let result = tokio::task::block_in_place(|| {
+   |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_private_transfer.rs:276:18
+    |
+276 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_private_transfer.rs:376:18
+    |
+376 |     let result = tokio::task::block_in_place(|| {
+    |                  ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+  --> src\ffi_universal_switch.rs:16:26
+   |
+16 | static FFI_RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
+   |                          ^^^^^ use of undeclared crate or module `tokio`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+  --> src\ffi.rs:48:5
+   |
+48 |     tokio::runtime::Builder::new_multi_thread()
+   |     ^^^^^ use of undeclared crate or module `tokio`
+   |
+help: consider importing this struct
+   |
+3  + use std::thread::Builder;
+   |
+help: if you import `Builder`, refer to it directly
+   |
+48 -     tokio::runtime::Builder::new_multi_thread()
+48 +     Builder::new_multi_thread()
+   |
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi.rs:121:33
+    |
+121 |     let global_state = Arc::new(tokio::sync::RwLock::new(GlobalState::new()));
+    |                                 ^^^^^ use of undeclared crate or module `tokio`
+    |
+help: consider importing one of these items
+    |
+3   + use std::sync::RwLock;
+    |
+3   + use parking_lot::RwLock;
+    |
+help: if you import `RwLock`, refer to it directly
+    |
+121 -     let global_state = Arc::new(tokio::sync::RwLock::new(GlobalState::new()));
+121 +     let global_state = Arc::new(RwLock::new(GlobalState::new()));
+    |
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi.rs:122:31
+    |
+122 |     let fee_system = Arc::new(tokio::sync::RwLock::new(USDFeeSystem::new(FeeConfig::default())));
+    |                               ^^^^^ use of undeclared crate or module `tokio`
+    |
+help: consider importing one of these items
+    |
+3   + use std::sync::RwLock;
+    |
+3   + use parking_lot::RwLock;
+    |
+help: if you import `RwLock`, refer to it directly
+    |
+122 -     let fee_system = Arc::new(tokio::sync::RwLock::new(USDFeeSystem::new(FeeConfig::default())));
+122 +     let fee_system = Arc::new(RwLock::new(USDFeeSystem::new(FeeConfig::default())));
+    |
+
+error[E0433]: failed to resolve: could not find `privacy` in the crate root
+   --> src\ffi.rs:404:39
+    |
+404 |             let proof_system = crate::privacy::halo2_circuits::ProductionProofSystem::new(17, 8)
+    |                                       ^^^^^^^ could not find `privacy` in the crate root
+    |
+help: consider importing this struct through its public re-export
+    |
+3   + use crate::circuits::ProductionProofSystem;
+    |
+help: if you import `ProductionProofSystem`, refer to it directly
+    |
+404 -             let proof_system = crate::privacy::halo2_circuits::ProductionProofSystem::new(17, 8)
+404 +             let proof_system = ProductionProofSystem::new(17, 8)
+    |
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+  --> src\ffi_universal_switch.rs:17:5
+   |
+17 |     tokio::runtime::Builder::new_multi_thread()
+   |     ^^^^^ use of undeclared crate or module `tokio`
+   |
+help: consider importing this struct
+   |
+4  + use std::thread::Builder;
+   |
+help: if you import `Builder`, refer to it directly
+   |
+17 -     tokio::runtime::Builder::new_multi_thread()
+17 +     Builder::new_multi_thread()
+   |
+
+warning: unused import: `Mutex`
+ --> src\ffi_precompiles.rs:6:22
+  |
+6 | use std::sync::{Arc, Mutex, Once};
+  |                      ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: use of deprecated struct `zk_proofs::TransferCircuit`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:265:18
+    |
+265 | impl Default for TransferCircuit {
+    |                  ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `zk_proofs::TransferCircuit`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:279:6
+    |
+279 | impl TransferCircuit {
+    |      ^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `zk_proofs::TransferCircuit`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:406:22
+    |
+406 | impl Circuit<Fr> for TransferCircuit {
+    |                      ^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `zk_proofs::TransferCircuitV2`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:615:6
+    |
+615 | impl TransferCircuitV2 {
+    |      ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `zk_proofs::TransferCircuitV2`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:690:22
+    |
+690 | impl Circuit<Fr> for TransferCircuitV2 {
+    |                      ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `zk_proofs::TransferCircuit`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:744:23
+    |
+744 |         let circuit = TransferCircuit::default();
+    |                       ^^^^^^^^^^^^^^^
+
+error[E0282]: type annotations needed for `Arc<_>`
+   --> src\ffi.rs:126:9
+    |
+126 |     let proof_system = match ProductionProofSystem::new(17, 8) {
+    |         ^^^^^^^^^^^^
+...
+137 |         proof_system.clone(),
+    |                      ----- type must be known at this point
+    |
+help: consider giving `proof_system` an explicit type, where the type for type parameter `T` is specified
+    |
+126 |     let proof_system: Arc<T> = match ProductionProofSystem::new(17, 8) {
+    |                     ++++++++
+
+error[E0277]: the size for values of type `[H256]` cannot be known at compilation time
+   --> src\ffi.rs:258:20
+    |
+258 |         Ok((proof, nullifiers, commitments)) => {
+    |                    ^^^^^^^^^^ doesn't have a size known at compile-time
+    |
+    = help: the trait `Sized` is not implemented for `[H256]`
+    = note: all local variables must have a statically known size
+    = help: unsized locals are gated as an unstable feature
+
+error[E0277]: the size for values of type `[H256]` cannot be known at compilation time
+   --> src\ffi.rs:258:32
+    |
+258 |         Ok((proof, nullifiers, commitments)) => {
+    |                                ^^^^^^^^^^^ doesn't have a size known at compile-time
+    |
+    = help: the trait `Sized` is not implemented for `[H256]`
+    = note: all local variables must have a statically known size
+    = help: unsized locals are gated as an unstable feature
+
+error[E0433]: failed to resolve: use of undeclared crate or module `tokio`
+   --> src\ffi_amount_privacy.rs:231:5
+    |
+231 |     tokio::spawn(async move {
+    |     ^^^^^ use of undeclared crate or module `tokio`
+
+warning: this function depends on never type fallback being `()`
+   --> src\ffi_universal_switch.rs:286:1
+    |
+286 | / pub extern "C" fn verify_switch_for_consensus(
+287 | |     handle: *mut UniversalSwitchHandle,
+288 | |     request_json: *const c_char,
+289 | |     block_height: u64,
+290 | |     state_root_hex: *const c_char,
+291 | | ) -> u8 {
+    | |_______^
+    |
+    = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+    = note: for more information, see issue #123748 <https://github.com/rust-lang/rust/issues/123748>
+    = help: specify the types explicitly
+note: in edition 2024, the requirement `!: Deserialize<'_>` will fail
+   --> src\ffi_universal_switch.rs:300:25
+    |
+300 |     let request = match serde_json::from_str(request_str) {
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: `#[warn(dependency_on_unit_never_type_fallback)]` on by default
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> src\circuits\halo_circuits.rs:977:7
+    |
+977 |     u.to_big_endian(&mut bytes);
+    |       ^^^^^^^^^^^^^ ---------- unexpected argument of type `&mut [u8; 32]`
+    |
+note: method defined here
+   --> C:\Users\ravik\.cargo\registry\src\index.crates.io-6f17d22bba15001f\primitive-types-0.13.1\src/lib.rs:44:1
+    |
+44  | / construct_uint! {
+45  | |     /// 256-bit unsigned integer.
+46  | |     #[cfg_attr(feature = "scale-info", derive(TypeInfo))]
+47  | |     pub struct U256(4);
+48  | | }
+    | |_^
+    = note: this error originates in the macro `$crate::construct_uint` which comes from the expansion of the macro `construct_uint` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: remove the extra argument
+    |
+977 -     u.to_big_endian(&mut bytes);
+977 +     u.to_big_endian();
+    |
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::secret`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:268:13
+    |
+268 |             secret: Value::unknown(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::amount`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:269:13
+    |
+269 |             amount: Value::unknown(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::blinding`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:270:13
+    |
+270 |             blinding: Value::unknown(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::merkle_path`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:271:13
+    |
+271 |             merkle_path: vec![Value::unknown(); 20],
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::leaf_index`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:272:13
+    |
+272 |             leaf_index: Value::unknown(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::merkle_root`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:273:13
+    |
+273 |             merkle_root: Value::unknown(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::nullifier_hash`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:274:13
+    |
+274 |             nullifier_hash: Value::unknown(),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::secret`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:435:21
+    |
+435 |                     self.secret
+    |                     ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::amount`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:441:21
+    |
+441 |                     self.amount
+    |                     ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::blinding`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:448:21
+    |
+448 |                     self.blinding
+    |                     ^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::secret`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:453:40
+    |
+453 |                 let commitment_value = self.secret.and_then(|s| {
+    |                                        ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::amount`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:454:21
+    |
+454 |                     self.amount.and_then(|a| {
+    |                     ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::blinding`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:455:25
+    |
+455 |                         self.blinding.map(|b| {
+    |                         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::merkle_path`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:500:29
+    |
+500 |         for (i, sibling) in self.merkle_path.iter().enumerate() {
+    |                             ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::leaf_index`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:511:37
+    |
+511 |                     let _leaf_bit = self.leaf_index.map(|idx| (idx >> i) & 1);
+    |                                     ^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::secret`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:546:21
+    |
+546 |                     self.secret
+    |                     ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::leaf_index`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:552:21
+    |
+552 |                     self.leaf_index.map(|idx| Fr::from(idx as u64))
+    |                     ^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::secret`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:556:39
+    |
+556 |                 let nullifier_value = self.secret.and_then(|s| {
+    |                                       ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuit::leaf_index`: Use Halo2ProofSystem from halo2_circuits.rs instead. This circuit has no Poseidon constraints and no range checks.
+   --> src\zk_proofs.rs:557:21
+    |
+557 |                     self.leaf_index.map(|idx| {
+    |                     ^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:619:13
+    |
+619 |             builder,
+    |             ^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::lookup_bits`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:620:13
+    |
+620 |             lookup_bits,
+    |             ^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:632:19
+    |
+632 |         let ctx = self.builder.main(0);
+    |                   ^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:681:9
+    |
+681 |         self.builder.assigned_instances[0].push(commitment);
+    |         ^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:682:9
+    |
+682 |         self.builder.assigned_instances[0].push(nullifier);
+    |         ^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:683:9
+    |
+683 |         self.builder.assigned_instances[0].push(merkle_root);
+    |         ^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:696:23
+    |
+696 |         let builder = self.builder.clone().use_lookup_bits(self.lookup_bits);
+    |                       ^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::lookup_bits`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:696:60
+    |
+696 |         let builder = self.builder.clone().use_lookup_bits(self.lookup_bits);
+    |                                                            ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:697:16
+    |
+697 |         Self { builder, lookup_bits: self.lookup_bits }
+    |                ^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::lookup_bits`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:697:25
+    |
+697 |         Self { builder, lookup_bits: self.lookup_bits }
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::lookup_bits`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:697:38
+    |
+697 |         Self { builder, lookup_bits: self.lookup_bits }
+    |                                      ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:701:9
+    |
+701 |         self.builder.params()
+    |         ^^^^^^^^^^^^
+
+warning: use of deprecated field `zk_proofs::TransferCircuitV2::builder`: Use Halo2ProofSystem from halo2_circuits.rs instead. This is legacy code for backward compatibility only.
+   --> src\zk_proofs.rs:713:9
+    |
+713 |         self.builder.synthesize(config, layouter)
+    |         ^^^^^^^^^^^^
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+    --> src\zk_proofs.rs:1258:7
+     |
+1258 |     u.to_little_endian(&mut bytes);
+     |       ^^^^^^^^^^^^^^^^ ---------- unexpected argument of type `&mut [u8; 32]`
+     |
+note: method defined here
+    --> C:\Users\ravik\.cargo\registry\src\index.crates.io-6f17d22bba15001f\primitive-types-0.13.1\src/lib.rs:44:1
+     |
+44   | / construct_uint! {
+45   | |     /// 256-bit unsigned integer.
+46   | |     #[cfg_attr(feature = "scale-info", derive(TypeInfo))]
+47   | |     pub struct U256(4);
+48   | | }
+     | |_^
+     = note: this error originates in the macro `$crate::construct_uint` which comes from the expansion of the macro `construct_uint` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: remove the extra argument
+     |
+1258 -     u.to_little_endian(&mut bytes);
+1258 +     u.to_little_endian();
+     |
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> src\nullifiers\secure_privacy.rs:351:16
+    |
+351 |         amount.to_big_endian(&mut amount_bytes);
+    |                ^^^^^^^^^^^^^ ----------------- unexpected argument of type `&mut [u8; 32]`
+    |
+note: method defined here
+   --> C:\Users\ravik\.cargo\registry\src\index.crates.io-6f17d22bba15001f\primitive-types-0.13.1\src/lib.rs:44:1
+    |
+44  | / construct_uint! {
+45  | |     /// 256-bit unsigned integer.
+46  | |     #[cfg_attr(feature = "scale-info", derive(TypeInfo))]
+47  | |     pub struct U256(4);
+48  | | }
+    | |_^
+    = note: this error originates in the macro `$crate::construct_uint` which comes from the expansion of the macro `construct_uint` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: remove the extra argument
+    |
+351 -         amount.to_big_endian(&mut amount_bytes);
+351 +         amount.to_big_endian();
+    |
+
+warning: use of deprecated associated function `sha3::digest::generic_array::GenericArray::<T, N>::from_slice`: please upgrade to generic-array 1.x
+   --> src\nullifiers\secure_privacy.rs:358:28
+    |
+358 |         let nonce = Nonce::from_slice(&nonce_bytes);
+    |                            ^^^^^^^^^^
+
+warning: use of deprecated associated function `sha3::digest::generic_array::GenericArray::<T, N>::from_slice`: please upgrade to generic-array 1.x
+   --> src\nullifiers\secure_privacy.rs:417:28
+    |
+417 |         let nonce = Nonce::from_slice(&self.nonce);
+    |                            ^^^^^^^^^^
+
+warning: use of deprecated associated function `sha3::digest::generic_array::GenericArray::<T, N>::from_slice`: please upgrade to generic-array 1.x
+   --> src\key_management.rs:308:28
+    |
+308 |         let nonce = Nonce::from_slice(&nonce_bytes);
+    |                            ^^^^^^^^^^
+
+warning: use of deprecated associated function `sha3::digest::generic_array::GenericArray::<T, N>::from_slice`: please upgrade to generic-array 1.x
+   --> src\key_management.rs:330:28
+    |
+330 |         let nonce = Nonce::from_slice(&encrypted[..12]);
+    |                            ^^^^^^^^^^
+
+warning: use of deprecated associated function `sha3::digest::generic_array::GenericArray::<T, N>::from_slice`: please upgrade to generic-array 1.x
+   --> src\key_management.rs:350:30
+    |
+350 |         Ok(Key::<Aes256Gcm>::from_slice(&key_bytes).clone())
+    |                              ^^^^^^^^^^
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+  --> src\security_utils.rs:60:12
+   |
+60 |     amount.to_big_endian(&mut amount_bytes);
+   |            ^^^^^^^^^^^^^ ----------------- unexpected argument of type `&mut [u8; 32]`
+   |
+note: method defined here
+  --> C:\Users\ravik\.cargo\registry\src\index.crates.io-6f17d22bba15001f\primitive-types-0.13.1\src/lib.rs:44:1
+   |
+44 | / construct_uint! {
+45 | |     /// 256-bit unsigned integer.
+46 | |     #[cfg_attr(feature = "scale-info", derive(TypeInfo))]
+47 | |     pub struct U256(4);
+48 | | }
+   | |_^
+   = note: this error originates in the macro `$crate::construct_uint` which comes from the expansion of the macro `construct_uint` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: remove the extra argument
+   |
+60 -     amount.to_big_endian(&mut amount_bytes);
+60 +     amount.to_big_endian();
+   |
+
+warning: variable does not need to be mutable
+   --> src\circuits\halo_circuits.rs:278:13
+    |
+278 |         let mut builder = self.builder.clone();
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `meta`
+   --> src\circuits\halo_circuits.rs:290:18
+    |
+290 |     fn configure(meta: &mut ConstraintSystem<Fr>) -> Self::Config {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_meta`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+   --> src\circuits\halo_circuits.rs:492:13
+    |
+492 |         let mut builder = self.builder.clone();
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: unused variable: `meta`
+   --> src\circuits\halo_circuits.rs:504:18
+    |
+504 |     fn configure(meta: &mut ConstraintSystem<Fr>) -> Self::Config {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_meta`
+
+warning: variable does not need to be mutable
+   --> src\circuits\halo_circuits.rs:615:13
+    |
+615 |         let mut single_circuit = single_circuit_builder.build();
+    |             ----^^^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src\circuits\halo_circuits.rs:652:13
+    |
+652 |         let mut transaction_circuit = transaction_circuit_builder.build();
+    |             ----^^^^^^^^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+Some errors have detailed explanations: E0061, E0277, E0282, E0432, E0433.
+For more information about an error, try `rustc --explain E0061`.
+warning: `qoranet-privacy` (lib) generated 51 warnings
+error: could not compile `qoranet-privacy` (lib) due to 49 previous errors; 51 warnings emitted
